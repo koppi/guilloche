@@ -1,4 +1,4 @@
-## explore the world of guilloche
+## Explore the world of Guilloché
 
 [![guilloche](http://img.youtube.com/vi/JYKmZ7niF04/0.jpg)](https://www.youtube.com/watch?v=JYKmZ7niF04)
 
