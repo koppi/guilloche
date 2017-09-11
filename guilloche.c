@@ -2,9 +2,13 @@
  * guilloche.c - Guilloche powered by libSDL and Cairo
  *
  * Copyright (C) 2015 Jakob Flierl <jakob.flierl@gmail.com>
+ *
+ * Tested on Ubuntu 16.04 with:
+ *
+ * $ sudo apt -y install libsdl1.2-dev make gcc libcairo2-dev libpng16-dev
+ *
+ * for joystick access: $ sudo usermod -aG input $USER
  */
-
-// for joystick access: sudo usermod -aG input $USER
 
 #define HAVE_JOYSTICK
 
@@ -35,6 +39,7 @@ double line_width_joy = 0.0;
 #endif
 
 int mode = 1;
+int draw_mode = 0; // 0 for lines, 1 for pixels
 
 double t_step = 0.008;
 double t_step_step = 0.00000001;
@@ -44,8 +49,8 @@ double r = 0.08; // little steps
 double p = 35;   // size of the ring
 
 double Q = 30, Q_max = 150;
-double m = 1,  m_max = 50;
-double n = 6,  n_max = 50;
+double m = 1,  m_max = 50, m_delta = 0.1;
+double n = 6,  n_max = 50, n_delta = 0.1;
 
 double R_delta = 0.1;
 double r_delta = 0.00001;
@@ -95,6 +100,46 @@ Vector-valued functions:
 * Spirograph (special case of the hypotrochoid)
 */
 
+void rainbow(int step, int numsteps, double *r, double *g, double *b) {
+  double  h = (double) step / numsteps;
+  int i = h * 6;
+  double f = h * 6.0 - i;
+  int q = 1 - f;
+
+  switch (i % 6) {
+  case 0:
+    (*r) = 1.0;
+    (*g) = f;
+    (*b) = 0.0;
+    break;
+  case 1:
+     (*r) = q;
+     (*g) = 1.0;
+     (*b) = 0.0;
+    break;
+  case 2:
+     (*r) = 0.0;
+     (*g) = 1.0;
+     (*b) = f;
+    break;
+  case 3:
+     (*r) = 0.0;
+     (*g) = q;
+     (*b) = 1.0;
+    break;
+  case 4:
+     (*r) = f;
+     (*g) = 0.0;
+     (*b) = 1.0;
+    break;
+  case 5:
+    (*r) = 1.0;
+    (*g) = 0.0;
+    (*b) = q;
+    break;
+  }
+}
+
 void guilloche(cairo_t *cr, int width, int height) {
         /* who doesn't want all those nice line settings :) */
         cairo_set_line_cap (cr, CAIRO_LINE_CAP_ROUND);
@@ -106,6 +151,8 @@ void guilloche(cairo_t *cr, int width, int height) {
         double oldx, oldy;
         int first = 0;
         double t = 0;
+	int i = 0;
+	
         while ( t < 2 * M_PI) {
                 t += t_step;
                 double x = (R+r)*cos(t)+(r+p)*cos((R+r)/r*t);
@@ -114,21 +161,30 @@ void guilloche(cairo_t *cr, int width, int height) {
                 x = x * 4 + width / 2;
                 y = y * 4 + height / 2;
 
+		double a = 1;
+		double colr = 0.4;
+		double colg = a;
+		double colb = 0.4;
+
+		// printf("%d %d\n", i, (int)(2 * M_PI / t_step));
+		rainbow(i, (int)(2 * M_PI / t_step), &colr, &colg, &colb);
+		cairo_set_source_rgb (cr, colr, colg, colb);
+		
                 if (first == 1) {
-                        double a = 1;
-                        double colr = 0.4;
-                        double colg = a;
-                        double colb = 0.4;
-                        cairo_set_source_rgb (cr, colr, colg, colb);
-                        cairo_move_to (cr, oldx, oldy);
-                        cairo_line_to (cr, x, y);
-                        cairo_stroke (cr);
+		  if (draw_mode == 0) {
+		    cairo_move_to (cr, oldx, oldy);
+		    cairo_line_to (cr, x, y);
+		  } else {
+		    cairo_arc(cr, x, y, line_width, 0, 2 * M_PI);
+		  }
+		  cairo_stroke (cr);
                 } else {
                         first = 1;
                 }
 
                 oldx = x;
                 oldy = y;
+		i++;
         }
         t_step += t_step_step;
         R += R_step;
@@ -151,6 +207,7 @@ void guilloche2(cairo_t *cr, int width, int height) {
     double oldx, oldy;
     int first = 0;
     double t = 0;
+    int i = 0;
     while ( t < 2 * M_PI) {
         t += t_step;
         double x =(R+r)*cos(m*t)+(r+p)*cos(m*t*(R+r)/r)+Q*cos(n*t);
@@ -159,14 +216,22 @@ void guilloche2(cairo_t *cr, int width, int height) {
         x = x * 4 + width / 2;
         y = y * 4 + height / 2;
         
+	double a = 1;
+	double colr = 0.4;
+	double colg = a;
+	double colb = 0.4;
+	// printf("%d %d\n", i, (int)(2 * M_PI / t_step));
+	rainbow(i, (int)(2 * M_PI / t_step), &colr, &colg, &colb);
+	cairo_set_source_rgb (cr, colr, colg, colb);
+	    
         if (first == 1) {
-            double a = 1;
-            double colr = 0.4;
-            double colg = a;
-            double colb = 0.4;
-            cairo_set_source_rgb (cr, colr, colg, colb);
-            cairo_move_to (cr, oldx, oldy);
-            cairo_line_to (cr, x, y);
+	    if (draw_mode == 0) {
+	      cairo_move_to (cr, oldx, oldy);
+	      cairo_line_to (cr, x, y);
+	    } else {
+	      cairo_arc(cr, x, y, line_width, 0, 2 * M_PI);
+	    }
+
             cairo_stroke (cr);
         } else {
             first = 1;
@@ -174,6 +239,7 @@ void guilloche2(cairo_t *cr, int width, int height) {
         
         oldx = x;
         oldy = y;
+	i++;
     }
     t_step += t_step_step;
     R += R_step;
@@ -375,18 +441,25 @@ int main (int argc, char **argv) {
                             Q--;
                             if (Q < -Q_max) Q = Q_max;
                     } else if (event.key.keysym.sym == SDLK_w) {
-                            m++;
+		      m+=m_delta;
                             if (m > m_max) m = -m_max;
                     } else if (event.key.keysym.sym == SDLK_s) {
-                            m--;
+ 		      m-=m_delta;
                             if (m < -m_max) m = m_max;
                     } else if (event.key.keysym.sym == SDLK_e) {
-                            n++;
+		      n+=n_delta;
                             if (n > n_max) n = -n_max;
                     } else if (event.key.keysym.sym == SDLK_d) {
-                            n--;
+		      n-=n_delta;
                             if (n < -n_max) n = n_max;
-                    }
+                    } else if (event.key.keysym.sym == SDLK_m) {
+		      if (draw_mode == 0) {
+			draw_mode = 1;
+		      } else {
+			draw_mode = 0;
+		      }
+                    } 
+		    
                     break;
 
 	        case SDL_QUIT:
