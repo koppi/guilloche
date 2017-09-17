@@ -5,7 +5,7 @@
  *
  * Tested on Ubuntu 16.04 with:
  *
- * $ sudo apt -y install libsdl1.2-dev make gcc libcairo2-dev libpng16-dev
+ * $ sudo apt -y install libsdl1.2-dev make gcc libcairo2-dev libpng-dev libsdl-image1.2-dev
  *
  * for joystick access: $ sudo usermod -aG input $USER
  */
