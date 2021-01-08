@@ -1,7 +1,7 @@
 /*
  * guilloche.c - Guilloche powered by libSDL and Cairo
  *
- * Copyright (C) 2015 Jakob Flierl <jakob.flierl@gmail.com>
+ * Copyright (C) 2015-2021 Jakob Flierl <jakob.flierl@gmail.com>
  *
  * Tested on Ubuntu 16.04 with:
  *
