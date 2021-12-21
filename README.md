@@ -7,7 +7,9 @@
 Required libraries: SDL, Cairo
 
 ```bash
+gh repo clone koppi/guilloche
 sudo apt -y install libsdl1.2-dev libsdl-image1.2-dev libpng-dev libcairo-dev
+cd guilloche
 make
 ./guilloche
 ```
